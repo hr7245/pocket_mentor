@@ -289,9 +289,10 @@ document.getElementById("authSubmit").addEventListener("click", () => {
   if (!email) return;
   currentUser = { email, brand };
   localStorage.setItem("d2c_current_user", JSON.stringify(currentUser));
+  // Load this user's saved chat; start fresh if none
+  chatHistory = JSON.parse(localStorage.getItem(userKey("chat")) || "[]");
   completed = JSON.parse(localStorage.getItem(userKey("completed")) || "{}");
   learnings = JSON.parse(localStorage.getItem(userKey("learnings")) || "[]");
-  chatHistory = JSON.parse(localStorage.getItem(userKey("chat")) || "[]");
   document.getElementById("authModal").classList.add("hidden");
   renderAuth();
   renderStage();
@@ -311,7 +312,21 @@ function renderChat() {
   box.scrollTop = box.scrollHeight;
 }
 
-const CATEGORY_KEYWORDS = {
+const GREETINGS = new Set(["hello", "hi", "hey", "hii", "helo", "yo", "sup", "howdy", "greetings", "good morning", "good evening", "good afternoon"]);
+
+function isGreeting(q) {
+  const clean = q.toLowerCase().replace(/[^a-z ]/g, "").trim();
+  return GREETINGS.has(clean) || clean.split(" ").length <= 2 && GREETINGS.has(clean.split(" ")[0]);
+}
+
+function greetingReply() {
+  const name = currentUser?.brand ? `Hey ${currentUser.brand}!` : "Hey, welcome!";
+  return `${name} 👋 I'm your D2C Pocket Mentor — built for bootstrapped founders like you.<br/><br/>
+To give you the sharpest advice right away, tell me:<br/>
+• <strong>What product are you building?</strong> (e.g., a skincare serum, a protein supplement, a home organizer)<br/>
+• <strong>Where are you right now?</strong> — idea stage, waiting for samples, or already selling?<br/><br/>
+No fluff from me — just straight, cash-efficient guidance. 🚀`;
+}
   beauty_skincare: ["serum", "cream", "skincare", "face", "hair", "shampoo", "soap", "cosmetic", "beauty", "lip", "sunscreen"],
   food_beverage: ["snack", "coffee", "tea", "chocolate", "drink", "beverage", "sauce", "food", "cookie", "bar"],
   apparel_fashion: ["shirt", "t-shirt", "hoodie", "jeans", "dress", "apparel", "clothing", "fashion", "shoe", "sneaker"],
@@ -365,6 +380,15 @@ document.getElementById("chatForm").addEventListener("submit", async (e) => {
   if (mismatch) {
     const msg = `It looks like you're asking about <strong>${mismatch.name}</strong>, but you currently have <strong>${currentCat.name}</strong> selected.<br/>Should I switch your category so my margin, compliance, and MOQ advice is accurate?<br/><button class="switch-cat-btn" onclick="switchCategoryFromChat('${mismatch.id}')">Switch to ${mismatch.name}</button>`;
     chatHistory.push({ role: "mentor", text: msg });
+    localStorage.setItem(userKey("chat"), JSON.stringify(chatHistory));
+    renderChat();
+    return;
+  }
+
+  // Handle greetings naturally — don't dump playbook content
+  if (isGreeting(q)) {
+    const reply = greetingReply();
+    chatHistory.push({ role: "mentor", text: reply });
     localStorage.setItem(userKey("chat"), JSON.stringify(chatHistory));
     renderChat();
     return;
