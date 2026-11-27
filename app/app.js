@@ -379,12 +379,29 @@ document.getElementById("chatForm").addEventListener("submit", async (e) => {
         question: q,
         categoryName: currentCat.name,
         categoryId: currentCat.id,
-        userId: currentUser?.email || null
+        userId: currentUser?.email || null,
+        brandName: currentUser?.brand || "Founder",
+        history: chatHistory.slice(-5, -1)
       })
     });
     if (res.ok) {
       const data = await res.json();
       reply = data.answer;
+      const catMatch = reply.match(/\[NEW_CATEGORY:\s*(\{.*?\})\]/s);
+      if (catMatch) {
+        try {
+          const newCat = JSON.parse(catMatch[1]);
+          reply = reply.replace(catMatch[0], "").trim();
+          if (!CATEGORIES.find((c) => c.id === newCat.id)) {
+            CATEGORIES.push(newCat);
+            const opt = document.createElement("option");
+            opt.value = newCat.id;
+            opt.textContent = newCat.name;
+            document.getElementById("categorySelect").appendChild(opt);
+          }
+          reply += `<br/><button class="switch-cat-btn" onclick="switchCategoryFromChat('${newCat.id}')">Auto-Switch to ${newCat.name}</button>`;
+        } catch (_) {}
+      }
     }
   } catch (_) {
     // Fallback to local brain when running offline/locally without Vercel

@@ -7,18 +7,28 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { question, categoryName, categoryId, userId } = req.body;
+  const { question, categoryName, categoryId, userId, brandName, history } = req.body;
   if (!question) return res.status(400).json({ error: "Question is required" });
 
   const systemPrompt = `You are a blunt, experience-led D2C Pocket Mentor for bootstrapped, first-time founders.
-Category: ${categoryName || "General D2C"}.
-Give practical, cash-efficient, step-by-step advice. Avoid generic fluff.`;
+Founder/Brand: ${brandName || "Founder"}. Selected Category: ${categoryName || "General D2C"}.
+Rules:
+1. Personalize your tone and examples to ${brandName || "this founder"}—never give generic, robotic, or identical boilerplate.
+2. Give practical, cash-efficient, step-by-step advice with real numbers (MOQ, COGS, Gross Margin, RTO, CAC).
+3. If the user's product clearly does NOT belong in "${categoryName}", point out the mismatch and include at the very end:
+[NEW_CATEGORY: {"id":"custom_slug","name":"Suggested Category Name","margin":[55,70],"rto":[8,15],"moq":"200-500 units","channel":"Top 0-to-1 channel","compliance":["Key compliance 1","Key compliance 2"]}]`;
 
   try {
+    const contents = [
+      ...(Array.isArray(history) ? history.slice(-4).map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] })) : []),
+      { role: "user", parts: [{ text: question }] }
+    ];
+
     const callGemini = async (useSearch) => {
       const body = {
         system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: "user", parts: [{ text: question }] }]
+        contents,
+        generationConfig: { temperature: 0.85 }
       };
       if (useSearch) body.tools = [{ google_search: {} }];
 
