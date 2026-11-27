@@ -311,14 +311,64 @@ function renderChat() {
   box.scrollTop = box.scrollHeight;
 }
 
+const CATEGORY_KEYWORDS = {
+  beauty_skincare: ["serum", "cream", "skincare", "face", "hair", "shampoo", "soap", "cosmetic", "beauty", "lip", "sunscreen"],
+  food_beverage: ["snack", "coffee", "tea", "chocolate", "drink", "beverage", "sauce", "food", "cookie", "bar"],
+  apparel_fashion: ["shirt", "t-shirt", "hoodie", "jeans", "dress", "apparel", "clothing", "fashion", "shoe", "sneaker"],
+  home_lifestyle: ["kitchen", "candle", "pan", "mug", "decor", "home", "desk", "organizer", "bottle", "lamp"],
+  pet_care: ["dog", "cat", "pet", "treat", "kibble", "leash", "collar", "grooming"],
+  supplements_wellness: ["protein", "superyou", "supplement", "whey", "vitamin", "gummy", "creatine", "collagen", "nutrition", "probiotic"],
+  gadgets_electronics: ["charger", "earbud", "watch", "gadget", "electronic", "cable", "speaker", "tech"]
+};
+
+function detectCategoryMismatch(query, selectedCatId) {
+  const ql = query.toLowerCase();
+  for (const [catId, words] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (catId !== selectedCatId && words.some((w) => ql.includes(w))) {
+      return CATEGORIES.find((c) => c.id === catId);
+    }
+  }
+  return null;
+}
+
+window.switchCategoryFromChat = (catId) => {
+  const found = CATEGORIES.find((c) => c.id === catId);
+  if (!found) return;
+  currentCat = found;
+  document.getElementById("categorySelect").value = catId;
+  renderCategory();
+  calcEcon();
+  chatHistory.push({ role: "mentor", text: `Switched your category to <strong>${found.name}</strong>! Ask your question again and I'll tailor it to ${found.margin[0]}–${found.margin[1]}% margins & ${found.moq} MOQ.` });
+  localStorage.setItem(userKey("chat"), JSON.stringify(chatHistory));
+  renderChat();
+};
+
 document.getElementById("chatForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!currentUser) {
+    const guestTries = Number(localStorage.getItem("d2c_guest_tries") || "0");
+    if (guestTries >= 5) {
+      document.getElementById("authModal").classList.remove("hidden");
+      return;
+    }
+    localStorage.setItem("d2c_guest_tries", String(guestTries + 1));
+  }
+
   const input = document.getElementById("chatInput");
   const q = input.value.trim();
   if (!q) return;
   chatHistory.push({ role: "user", text: q });
   input.value = "";
   renderChat();
+
+  const mismatch = detectCategoryMismatch(q, currentCat.id);
+  if (mismatch) {
+    const msg = `It looks like you're asking about <strong>${mismatch.name}</strong>, but you currently have <strong>${currentCat.name}</strong> selected.<br/>Should I switch your category so my margin, compliance, and MOQ advice is accurate?<br/><button class="switch-cat-btn" onclick="switchCategoryFromChat('${mismatch.id}')">Switch to ${mismatch.name}</button>`;
+    chatHistory.push({ role: "mentor", text: msg });
+    localStorage.setItem(userKey("chat"), JSON.stringify(chatHistory));
+    renderChat();
+    return;
+  }
 
   let reply = "";
   try {

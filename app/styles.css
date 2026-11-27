@@ -192,5 +192,21 @@ select, input, button {
 .chat-msg.mentor { align-self: flex-start; background: #1e222d; border: 1px solid var(--border); }
 .chat-msg small { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.2rem; }
 .chat-form { display: flex; gap: 0.5rem; }
-.chat-form input { flex: 1; }
-.chat-form button { background: var(--accent); color: #0b0d14; font-weight: 600; cursor: pointer; }
+.chat-form input { flex: 1; min-width: 0; }
+.chat-form button { background: var(--accent); color: #0b0d14; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.switch-cat-btn {
+  margin-top: 0.5rem; background: var(--green); color: #0b0d14; font-weight: 600;
+  border: none; border-radius: 6px; padding: 0.35rem 0.7rem; cursor: pointer; font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .topbar { padding: 0.85rem 1rem; }
+  .category-picker { width: 100%; flex-wrap: wrap; }
+  .category-picker select { flex: 1; min-width: 160px; }
+  .container { padding: 0 0.75rem; margin: 1rem auto; }
+  .card { padding: 1rem; }
+  .input-row, .econ-results { grid-template-columns: 1fr; }
+  .chat-form, .feedback-row { flex-direction: column; }
+  .chat-form button, .feedback-row button { width: 100%; }
+  .chat-msg { max-width: 96%; }
+}
