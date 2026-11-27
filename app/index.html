@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2C Pocket Mentor — 0 to 1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚡</span>
+      <div>
+        <h1>D2C Pocket Mentor</h1>
+        <p class="subtitle">Bootstrapped 0-to-1 Guide &amp; Unit Economics Brain</p>
+      </div>
+    </div>
+    <div class="category-picker">
+      <label for="categorySelect">Your D2C Category:</label>
+      <select id="categorySelect"></select>
+      <button id="authBtn" type="button" class="auth-btn">Sign In</button>
+    </div>
+  </header>
+
+  <!-- Sign-In Modal -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Sign In to Save Your Progress</h3>
+      <p class="subtitle">Your checklist, category, unit economics, and mentor chat history are saved per account.</p>
+      <input type="email" id="authEmail" placeholder="founder@yourbrand.com" />
+      <input type="text" id="authBrand" placeholder="Brand Name (e.g., PureGlow)" />
+      <div class="modal-actions">
+        <button id="authSubmit" type="button">Continue</button>
+        <button id="authCancel" type="button" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- Category Snapshot -->
+    <section class="card category-card" id="categorySnapshot">
+      <div class="card-header">
+        <h2 id="catTitle">Category Benchmarks</h2>
+        <span class="badge" id="catMoq">MOQ: --</span>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <span class="metric-label">Target Gross Margin</span>
+          <strong class="metric-value" id="catMargin">--</strong>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Typical RTO / Return</span>
+          <strong class="metric-value" id="catRto">--</strong>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Top 0-to-1 Channel</span>
+          <strong class="metric-value small" id="catChannel">--</strong>
+        </div>
+      </div>
+      <div class="compliance-box">
+        <h3>Compliance &amp; Readiness Checklist</h3>
+        <ul id="catCompliance"></ul>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <!-- Stage-Gated Checklist -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Stage-Gated 0-to-1 Playbook</h2>
+          <span class="progress-text" id="progressText">0% Done</span>
+        </div>
+        <div class="tabs" id="stageTabs">
+          <button class="tab active" data-stage="0">0. Day 1</button>
+          <button class="tab" data-stage="1">1. Sourcing</button>
+          <button class="tab" data-stage="2">2. First 100</button>
+          <button class="tab" data-stage="3">3. Scale &amp; Raise</button>
+        </div>
+        <div id="stageContent" class="stage-list"></div>
+      </section>
+
+      <!-- Unit Economics Calculator -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Unit Economics &amp; Survival Math</h2>
+          <span class="badge" id="econVerdict">Enter numbers</span>
+        </div>
+        <form id="econForm" class="econ-form">
+          <div class="input-row">
+            <label>Selling Price (Excl. Tax) <input type="number" id="price" value="1000" min="1" /></label>
+            <label>COGS (Product + Packaging) <input type="number" id="cogs" value="300" min="0" /></label>
+          </div>
+          <div class="input-row">
+            <label>Forward + Reverse Shipping <input type="number" id="shipping" value="100" min="0" /></label>
+            <label>RTO / Return Rate (%) <input type="number" id="rto" value="15" min="0" max="90" /></label>
+          </div>
+          <div class="input-row">
+            <label>Gateway / COD Fee (%) <input type="number" id="gateway" value="2.5" step="0.1" min="0" /></label>
+            <label>Ad Spend per Order (CPP) <input type="number" id="cpp" value="250" min="0" /></label>
+          </div>
+        </form>
+        <div class="econ-results" id="econResults"></div>
+      </section>
+    </div>
+
+    <!-- AI Pocket Mentor Chat Window -->
+    <section class="card chat-card">
+      <div class="card-header">
+        <h2>Ask Your Pocket Mentor (Experience-Led Chat)</h2>
+        <span class="badge" id="chatStatus">Brain + Web Fallback Ready</span>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <form id="chatForm" class="chat-form">
+        <input type="text" id="chatInput" placeholder="Ask anything specific (e.g., 'How do I price a 50ml face serum with 20% RTO?')" required />
+        <button type="submit">Ask Mentor</button>
+      </form>
+    </section>
+
+    <!-- Pocket Mentor Brain Search & Feedback Loop -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Ask the Pocket Mentor Brain</h2>
+        <span class="subtitle-inline">Instant search across Day 1 guardrails, sourcing, logistics &amp; fundraising</span>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="brainSearch" placeholder="Try: 'MOQ', 'RTO', 'while waiting', 'ads', 'pitch deck', 'co-founder'..." />
+      </div>
+      <div id="brainResults" class="brain-results"></div>
+
+      <div class="feedback-box">
+        <h3>Log a New Obstacle or Win (Makes the Brain Smarter)</h3>
+        <div class="feedback-row">
+          <input type="text" id="learningInput" placeholder="e.g., 'WhatsApp COD confirmation cut our RTO from 25% to 12%'" />
+          <button id="saveLearningBtn" type="button">Save Learning</button>
+        </div>
+        <ul id="learningsList" class="learnings-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{
+  "categories": [
+    {
+      "id": "beauty_skincare",
+      "name": "Beauty, Skincare & Personal Care",
+      "target_gross_margin_pct": [60, 75],
+      "typical_rto_return_pct": [8, 15],
+      "recommended_first_moq": "200–500 units",
+      "compliance_checklist": [
+        "Cosmetic manufacturing/import license",
+        "Full ingredient list & batch/expiry labeling",
+        "Patch-test / dermatological safety disclaimer"
+      ],
+      "top_acquisition_channel": "Nano-influencer seeding + before/after UGC"
+    },
+    {
+      "id": "food_beverage",
+      "name": "Packaged Food, Beverages & Snacks",
+      "target_gross_margin_pct": [50, 65],
+      "typical_rto_return_pct": [5, 12],
+      "recommended_first_moq": "300–500 units",
+      "compliance_checklist": [
+        "Food safety registration (FSSAI / FDA)",
+        "Nutritional facts, allergens & shelf-life testing",
+        "Tamper-evident food-grade packaging"
+      ],
+      "top_acquisition_channel": "Local pop-ups, tasting samples + WhatsApp reorder loops"
+    },
+    {
+      "id": "apparel_fashion",
+      "name": "Apparel, Footwear & Fashion",
+      "target_gross_margin_pct": [55, 70],
+      "typical_rto_return_pct": [18, 28],
+      "recommended_first_moq": "50–150 units per size/color (keep SKUs minimal)",
+      "compliance_checklist": [
+        "Wash-care & fabric composition labels",
+        "Clear size chart with model measurements"
+      ],
+      "top_acquisition_channel": "Founder styling Reels/TikToks + micro-creator try-on hauls"
+    },
+    {
+      "id": "home_lifestyle",
+      "name": "Home, Kitchen & Lifestyle",
+      "target_gross_margin_pct": [55, 68],
+      "typical_rto_return_pct": [8, 15],
+      "recommended_first_moq": "100–300 units",
+      "compliance_checklist": [
+        "Drop-test packaging for fragile items",
+        "Material safety (BPA-free / food-safe if kitchenware)"
+      ],
+      "top_acquisition_channel": "Aesthetic unboxing videos + Pinterest/Instagram Reels"
+    },
+    {
+      "id": "pet_care",
+      "name": "Pet Care & Supplies",
+      "target_gross_margin_pct": [55, 70],
+      "typical_rto_return_pct": [6, 12],
+      "recommended_first_moq": "200–400 units",
+      "compliance_checklist": [
+        "Pet food/supplement safety & ingredient disclosure",
+        "Non-toxic material certification for toys"
+      ],
+      "top_acquisition_channel": "Pet-parent communities + cute UGC challenges"
+    },
+    {
+      "id": "supplements_wellness",
+      "name": "Health, Wellness & Supplements",
+      "target_gross_margin_pct": [65, 80],
+      "typical_rto_return_pct": [8, 15],
+      "recommended_first_moq": "300–500 units",
+      "compliance_checklist": [
+        "Nutraceutical / FSSAI / FDA compliance",
+        "Lab-tested COA (Certificate of Analysis) per batch",
+        "Avoid illegal medical/cure claims in ads"
+      ],
+      "top_acquisition_channel": "Educational content + 30/60-day subscription/replenishment"
+    },
+    {
+      "id": "gadgets_electronics",
+      "name": "Consumer Gadgets & Accessories",
+      "target_gross_margin_pct": [45, 60],
+      "typical_rto_return_pct": [10, 18],
+      "recommended_first_moq": "100–300 units",
+      "compliance_checklist": [
+        "Safety certifications (BIS / CE / FCC / RoHS)",
+        "Clear 6–12 month warranty & replacement policy"
+      ],
+      "top_acquisition_channel": "Tech/desk-setup YouTube Shorts & problem-solving demos"
+    }
+  ]
+}
