@@ -19,9 +19,41 @@ Rules:
 [NEW_CATEGORY: {"id":"custom_slug","name":"Suggested Category Name","margin":[55,70],"rto":[8,15],"moq":"200-500 units","channel":"Top 0-to-1 channel","compliance":["Key compliance 1","Key compliance 2"]}]`;
 
   try {
+    // 0. Retrieve relevant chunks from Supabase pgvector (if configured)
+    let ragContext = "";
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+      try {
+        const embRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${process.env.GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: { parts: [{ text: question }] } })
+          }
+        );
+        const embData = await embRes.json();
+        const queryEmbedding = embData?.embedding?.values;
+        if (queryEmbedding) {
+          const matchRes = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/match_knowledge`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: process.env.SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ query_embedding: queryEmbedding, match_threshold: 0.45, match_count: 4 })
+          });
+          const matches = await matchRes.json();
+          if (Array.isArray(matches) && matches.length) {
+            ragContext = "\n\nRelevant Mentor Corpus Context:\n" + matches.map((m) => `- [${m.source_title}]: ${m.content}`).join("\n");
+          }
+        }
+      } catch (_) {}
+    }
+
     const contents = [
       ...(Array.isArray(history) ? history.slice(-4).map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] })) : []),
-      { role: "user", parts: [{ text: question }] }
+      { role: "user", parts: [{ text: question + ragContext }] }
     ];
 
     const callGemini = async (useSearch) => {
