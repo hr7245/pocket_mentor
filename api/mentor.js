@@ -15,27 +15,35 @@ Category: ${categoryName || "General D2C"}.
 Give practical, cash-efficient, step-by-step advice. Avoid generic fluff.`;
 
   try {
-    // 1. Call Gemini API (Free Tier) with Google Search Grounding
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: "user", parts: [{ text: question }] }],
-          tools: [{ google_search: {} }]
-        })
-      }
-    );
+    const callGemini = async (useSearch) => {
+      const body = {
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: "user", parts: [{ text: question }] }]
+      };
+      if (useSearch) body.tools = [{ google_search: {} }];
 
-    const data = await geminiRes.json();
-    if (!geminiRes.ok || data.error) {
-      const msg = data?.error?.message || `Gemini API error (${geminiRes.status})`;
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+      );
+      return { ok: r.ok, status: r.status, data: await r.json() };
+    };
+
+    // 1. Try Gemini with Google Search Grounding; if 429 (free-tier search limit), retry without search
+    let result = await callGemini(true);
+    if (result.status === 429) {
+      result = await callGemini(false);
+    }
+
+    if (!result.ok || result.data.error) {
+      if (result.status === 429) {
+        return res.status(429).json({ error: "Quota exceeded" });
+      }
+      const msg = result.data?.error?.message || `Gemini API error (${result.status})`;
       return res.status(200).json({ answer: `API Error: ${msg}` });
     }
     const answer =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      result.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Could not generate a response. Check your GEMINI_API_KEY.";
 
     // 2. Save to Supabase learned_brain + chat_history (if configured)
