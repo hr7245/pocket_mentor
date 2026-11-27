@@ -120,11 +120,13 @@ const STAGES = {
 };
 
 const BRAIN_SNIPPETS = [
-  { title: "What NOT to do from Day 1", body: "Never rent an office, order high-MOQ custom boxes, hire an agency, or run Meta ads before 50–100 organic sales." },
-  { title: "Negotiating Low MOQs", body: "Offer to pay 100% of raw material cost upfront and labor on dispatch. Position as a 200-unit test batch before a 1,000-unit reorder." },
+  { title: "Company Registration & Incorporation", body: "Don't incorporate before validating demand. You can run a waitlist, pre-orders, or small-batch tests first. Once you have consistent sales, start lean (Sole Proprietorship / LLC, or Pvt Ltd only if raising VC) and register for GST/local tax." },
+  { title: "What NOT to do from Day 1", body: "Never rent an office, order high-MOQ custom boxes, hire an agency, or run Meta ads before 50–100 organic sales. Launch with 1–3 hero SKUs only." },
+  { title: "Negotiating Low MOQs", body: "Offer to pay 100% of raw material cost upfront and labor on dispatch. Position as a 200-unit test batch before a 1,000-unit reorder. Always test samples from 3+ suppliers." },
   { title: "What to do while waiting for products", body: "Build a waitlist page, film 'build in public' videos, line up 50 nano-influencers, set up Shopify/WhatsApp flows, and interview 10 target customers." },
   { title: "True CAC & RTO Math", body: "True CAC = Ad Spend per Order / (1 - RTO Rate). If CPP is 400 and RTO is 25%, True CAC is 533." },
   { title: "Cutting COD & RTO Losses", body: "Send instant WhatsApp/IVR confirmation for COD orders; auto-cancel unconfirmed orders. Incentivize prepaid with free shipping or a small discount." },
+  { title: "First 100 Orders (Zero-Budget)", body: "Seed 50 nano-influencers (1k–15k followers) with free product, post founder-led 'build in public' Reels, and engage in niche communities." },
   { title: "10-Slide D2C Pitch Deck", body: "1. Hook, 2. Problem, 3. Solution, 4. Market, 5. Traction, 6. Unit Economics (CM1/CM2), 7. GTM, 8. Competition, 9. Team, 10. Ask & Use of Funds." },
   { title: "Co-founder & Hiring Rules", body: "Test co-founders with a 30-day sprint and 4-year vesting (1-year cliff). Hire freelancers for Ops & Video Editing before any full-time hire." }
 ];
@@ -340,10 +342,16 @@ document.getElementById("chatForm").addEventListener("submit", async (e) => {
 
   if (!reply) {
     const ql = q.toLowerCase();
-    const match = BRAIN_SNIPPETS.find((s) => ql.includes(s.title.toLowerCase().split(" ")[0]) || s.body.toLowerCase().split(" ").some((w) => w.length > 4 && ql.includes(w)));
+    const match = BRAIN_SNIPPETS.find(
+      (s) =>
+        ql.includes(s.title.toLowerCase().split(" ")[0]) ||
+        s.title.toLowerCase().split(" ").some((w) => w.length > 3 && ql.includes(w)) ||
+        s.body.toLowerCase().split(" ").some((w) => w.length > 4 && ql.includes(w))
+    );
+    const followUp = `<br/><br/><strong>To give you sharper advice for ${currentCat.name}:</strong><br/>1. What is your target selling price &amp; landed COGS?<br/>2. Have you already sold to 10+ strangers, or are you still pre-launch?`;
     reply = match
-      ? `<strong>From the ${currentCat.name} Playbook:</strong> ${match.body}<br/><br/><em>Category Guardrail:</em> Keep your Gross Margin at ${currentCat.margin[0]}%+ and watch RTO around ${currentCat.rto[0]}–${currentCat.rto[1]}%.`
-      : `New question! Deploy to Vercel with your Gemini & Supabase keys to search the web and save this to your Knowledge Brain.`;
+      ? `<strong>${match.title} (${currentCat.name}):</strong> ${match.body}<br/><br/><em>Category Guardrail:</em> Target ${currentCat.margin[0]}%+ Gross Margin &amp; watch RTO around ${currentCat.rto[0]}–${currentCat.rto[1]}%.${followUp}`
+      : `<strong>Pocket Mentor (${currentCat.name}):</strong> Focus on validating demand with 1–3 hero SKUs before spending on inventory or ads. Target a ${currentCat.margin[0]}%+ gross margin and start with ${currentCat.channel}.${followUp}`;
   }
 
   chatHistory.push({ role: "mentor", text: reply });

@@ -36,11 +36,9 @@ Give practical, cash-efficient, step-by-step advice. Avoid generic fluff.`;
     }
 
     if (!result.ok || result.data.error) {
-      if (result.status === 429) {
-        return res.status(429).json({ error: "Quota exceeded" });
-      }
-      const msg = result.data?.error?.message || `Gemini API error (${result.status})`;
-      return res.status(200).json({ answer: `API Error: ${msg}` });
+      return res.status(result.status || 503).json({
+        error: result.data?.error?.message || "Gemini temporarily unavailable"
+      });
     }
     const answer =
       result.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
