@@ -30,6 +30,10 @@ Give practical, cash-efficient, step-by-step advice. Avoid generic fluff.`;
     );
 
     const data = await geminiRes.json();
+    if (!geminiRes.ok || data.error) {
+      const msg = data?.error?.message || `Gemini API error (${geminiRes.status})`;
+      return res.status(200).json({ answer: `API Error: ${msg}` });
+    }
     const answer =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Could not generate a response. Check your GEMINI_API_KEY.";
