@@ -24,17 +24,30 @@ const chunkText = (text, size = 900) => {
   return chunks.slice(0, 12); // Cap per source to stay within free-tier rate limits
 };
 
+const EMBEDDING_MODELS = [
+  "gemini-embedding-exp-03-07",
+  "text-embedding-004",
+  "embedding-001"
+];
+
 async function embed(text) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: { parts: [{ text }] } })
+  for (const model of EMBEDDING_MODELS) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:embedContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: { parts: [{ text }] } })
+      }
+    );
+    const data = await res.json();
+    if (res.ok && data?.embedding?.values) {
+      console.log(`  ✓ Embedded with ${model}`);
+      return data.embedding.values;
     }
-  );
-  const data = await res.json();
-  return data?.embedding?.values || null;
+    console.error(`  ⚠ ${model} failed (${res.status}):`, data?.error?.message || "unknown");
+  }
+  return null;
 }
 
 async function run() {
@@ -45,20 +58,30 @@ async function run() {
       const clean = stripHtml(html);
       const chunks = chunkText(clean);
 
+      let inserted = 0;
       for (const content of chunks) {
         const embedding = await embed(content);
-        if (!embedding) continue;
-        await fetch(`${process.env.SUPABASE_URL}/rest/v1/knowledge_chunks`, {
+        // Store chunk even without embedding (falls back to keyword search in mentor)
+        const payload = { source_title: src.title, source_url: src.url, content };
+        if (embedding) payload.embedding = embedding;
+        const sbRes = await fetch(`${process.env.SUPABASE_URL}/rest/v1/knowledge_chunks`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             apikey: process.env.SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`
+            Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+            Prefer: "return=minimal"
           },
-          body: JSON.stringify({ source_title: src.title, source_url: src.url, content, embedding })
+          body: JSON.stringify(payload)
         });
+        if (!sbRes.ok) {
+          const errText = await sbRes.text();
+          console.error(`  ❌ Supabase insert failed (${sbRes.status}):`, errText);
+        } else {
+          inserted++;
+        }
       }
-      console.log(`Ingested ${chunks.length} chunks from ${src.title}`);
+      console.log(`✅ ${inserted}/${chunks.length} chunks saved from ${src.title}`);
     } catch (err) {
       console.error(`Failed ${src.title}:`, err.message);
     }

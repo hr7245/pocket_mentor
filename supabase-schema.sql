@@ -38,9 +38,9 @@ create table if not exists knowledge_chunks (
   embedding vector(768)
 );
 
+-- Full-text search function (replaces pgvector, works without embeddings)
 create or replace function match_knowledge (
-  query_embedding vector(768),
-  match_threshold float default 0.5,
+  search_query text,
   match_count int default 4
 )
 returns table (
@@ -48,18 +48,22 @@ returns table (
   source_title text,
   source_url text,
   content text,
-  similarity float
+  rank real
 )
 language sql stable
 as $$
   select
-    knowledge_chunks.id,
-    knowledge_chunks.source_title,
-    knowledge_chunks.source_url,
-    knowledge_chunks.content,
-    1 - (knowledge_chunks.embedding <=> query_embedding) as similarity
+    id,
+    source_title,
+    source_url,
+    content,
+    ts_rank(to_tsvector('english', content), plainto_tsquery('english', search_query)) as rank
   from knowledge_chunks
-  where 1 - (knowledge_chunks.embedding <=> query_embedding) > match_threshold
-  order by knowledge_chunks.embedding <=> query_embedding
+  where to_tsvector('english', content) @@ plainto_tsquery('english', search_query)
+  order by rank desc
   limit match_count;
 $$;
+
+-- Index for fast full-text search
+create index if not exists knowledge_chunks_fts
+  on knowledge_chunks using gin(to_tsvector('english', content));
